@@ -39,6 +39,7 @@ dependencies:
   flutter_pdfview: ^1.4.1+1
   file_picker: ^10.2.0
   bloc: ^8.1.4
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
