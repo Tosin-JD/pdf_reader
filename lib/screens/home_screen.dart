@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -14,6 +17,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late PDFViewController _pdfViewController;
   int _currentPage = 0;
+  bool _showAppBar = true;
+  int _tapCount = 0;
+  Timer? _tapTimer;
 
   void _showAddBookmarkDialog(BuildContext context, int page) {
     final controller = TextEditingController();
@@ -64,39 +70,71 @@ class _HomeScreenState extends State<HomeScreen> {
     final bloc = context.read<PdfCubit>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("PDF Reader"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.bookmark),
-            onPressed: () => _showAddBookmarkDialog(context, _currentPage),
-          ),
-          IconButton(
-            icon: const Icon(Icons.list),
-            onPressed: () =>
-                _showBookmarks(context, context.read<PdfCubit>().state.bookmarks),
-          ),
-        ],
-      ),
+      appBar: _showAppBar
+          ? AppBar(
+              title: const Text("PDF Reader"),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.bookmark),
+                  onPressed: () =>
+                      _showAddBookmarkDialog(context, _currentPage),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.list),
+                  onPressed: () => _showBookmarks(
+                    context,
+                    context.read<PdfCubit>().state.bookmarks,
+                  ),
+                ),
+              ],
+            )
+          : null,
+
       body: BlocBuilder<PdfCubit, PdfState>(
         builder: (context, state) {
           if (state.pdf != null) {
-            return PDFView(
-              filePath: state.pdf!.path,
-              defaultPage: state.lastPage ?? 0,
-              enableSwipe: true,
-              swipeHorizontal: false,
-              autoSpacing: true,
-              pageFling: true,
-              onPageChanged: (page, total) {
-                setState(() {
-                  _currentPage = page!;
-                });
-                bloc.savePage(_currentPage);
-              },
-              onViewCreated: (controller) {
-                _pdfViewController = controller;
-              },
+            return Stack(
+              children: [
+                PDFView(
+                  filePath: state.pdf!.path,
+                  defaultPage: state.lastPage ?? 0,
+                  enableSwipe: true,
+                  swipeHorizontal: false,
+                  autoSpacing: true,
+                  pageFling: true,
+                  onPageChanged: (page, total) {
+                    setState(() {
+                      _currentPage = page!;
+                    });
+                    bloc.savePage(_currentPage);
+                  },
+                  onViewCreated: (controller) {
+                    _pdfViewController = controller;
+                  },
+                ),
+
+                // Transparent tap detector
+                Positioned.fill(
+  child: GestureDetector(
+    behavior: HitTestBehavior.translucent,
+    onTapDown: (_) {
+      _tapCount++;
+
+      _tapTimer?.cancel();
+      _tapTimer = Timer(const Duration(milliseconds: 250), () {
+        if (_tapCount == 1) {
+          setState(() {
+            _showAppBar = !_showAppBar;
+          });
+        }
+
+        _tapCount = 0;
+      });
+    },
+  ),
+),
+
+              ],
             );
           } else {
             return const Center(child: Text("No PDF Selected"));
