@@ -51,4 +51,16 @@ class PdfRepositoryImpl implements PdfRepository {
 
     return stored.map((e) => Bookmark.fromJson(jsonDecode(e))).toList();
   }
+
+  @override
+  Future<void> saveLastOpenedFile(String filePath) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_opened_pdf', filePath);
+  }
+
+  @override
+  Future<String?> getLastOpenedFile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('last_opened_pdf');
+  }
 }

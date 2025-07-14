@@ -8,4 +8,7 @@ abstract class PdfRepository {
 
   Future<void> addBookmark(String filePath, Bookmark bookmark);
   Future<List<Bookmark>> getBookmarks(String filePath);
+
+  Future<void> saveLastOpenedFile(String filePath);
+  Future<String?> getLastOpenedFile();
 }

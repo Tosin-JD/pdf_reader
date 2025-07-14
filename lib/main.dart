@@ -11,19 +11,19 @@ import 'package:pdf_reader/screens/home_screen.dart';
 
 
 
-void main() {
-  // 1. Create the repository instance
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final pdfRepo = PdfRepositoryImpl();
 
-  // 2. Create use case instances
   final pickPdf = PickPdfFile(pdfRepo);
   final savePage = SaveLastPage(pdfRepo);
   final getLastPage = GetLastPage(pdfRepo);
   final addBookmark = AddBookmark(pdfRepo);
   final getBookmarks = GetBookmarks(pdfRepo);
 
-  // 3. Inject into the Cubit
   final pdfCubit = PdfCubit(
+    pdfRepo,
     pickPdf,
     savePage,
     getLastPage,
@@ -31,9 +31,12 @@ void main() {
     getBookmarks,
   );
 
-  // 4. Run the app
+  // Load last file
+  await pdfCubit.loadLastOpenedFile();
+
   runApp(MyApp(pdfCubit: pdfCubit));
 }
+
 
 class MyApp extends StatelessWidget {
   final PdfCubit pdfCubit;

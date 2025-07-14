@@ -1,13 +1,15 @@
 // lib/presentation/bloc/pdf_bloc.dart
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/domain/entities/bookmark.dart';
 import 'package:pdf_reader/domain/entities/pdf_file.dart';
 import 'package:pdf_reader/domain/repositories/get_last_page.dart';
+import 'package:pdf_reader/domain/repositories/pdf_repository.dart';
 import 'package:pdf_reader/domain/repositories/save_last_page.dart';
 import 'package:pdf_reader/domain/usecases/add_bookmark.dart';
 import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
-
 
 class PdfState {
   final PdfFile? pdf;
@@ -26,6 +28,7 @@ class PdfState {
 }
 
 class PdfCubit extends Cubit<PdfState> {
+  final PdfRepository repository;
   final PickPdfFile pickPdfFile;
   final SaveLastPage saveLastPage;
   final GetLastPage getLastPage;
@@ -33,20 +36,23 @@ class PdfCubit extends Cubit<PdfState> {
   final GetBookmarks getBookmarks;
 
   PdfCubit(
+    this.repository,
     this.pickPdfFile,
     this.saveLastPage,
     this.getLastPage,
     this.addBookmark,
     this.getBookmarks,
-  ) : super(PdfState());
+  ) : super( PdfState());
 
   Future<void> loadPdf() async {
     final pdf = await pickPdfFile();
-    if (pdf != null) {
-      final lastPage = await getLastPage(pdf.path);
-      final bookmarks = await getBookmarks(pdf.path);
-      emit(PdfState(pdf: pdf, lastPage: lastPage, bookmarks: bookmarks));
-    }
+    if (pdf == null) return;
+    await repository.saveLastOpenedFile(pdf.path);
+
+    final lastPage = await getLastPage(pdf.path);
+    final bookmarks = await getBookmarks(pdf.path);
+
+    emit(PdfState(pdf: pdf, lastPage: lastPage, bookmarks: bookmarks));
   }
 
   Future<void> savePage(int page) async {
@@ -61,6 +67,17 @@ class PdfCubit extends Cubit<PdfState> {
       await addBookmark(state.pdf!.path, bookmark);
       final updatedBookmarks = await getBookmarks(state.pdf!.path);
       emit(state.copyWith(bookmarks: updatedBookmarks));
+    }
+  }
+
+  Future<void> loadLastOpenedFile() async {
+    final path = await repository.getLastOpenedFile();
+    if (path != null && File(path).existsSync()) {
+      final pdf = PdfFile(name: path.split('/').last, path: path);
+      final lastPage = await repository.getLastPage(path);
+      final bookmarks = await repository.getBookmarks(path);
+
+      emit(PdfState(pdf: pdf, lastPage: lastPage, bookmarks: bookmarks));
     }
   }
 }
