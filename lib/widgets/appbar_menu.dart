@@ -99,8 +99,11 @@ class AppBarMenu extends StatelessWidget {
               case 'info':
                 _showPdfInfoDialog(context);
                 break;
-              case 'about':
+              case 'about-app':
                 navigationService.navigateTo('/about');
+                break;
+              case 'about-developer':
+                navigationService.navigateTo('/about-developer');
                 break;
               case 'exit':
                 exit(0);
@@ -111,7 +114,8 @@ class AppBarMenu extends StatelessWidget {
             PopupMenuItem(value: 'share', child: Text('Share PDF')),
             PopupMenuItem(value: 'print', child: Text('Print PDF')),
             PopupMenuItem(value: 'info', child: Text('File Info')),
-            PopupMenuItem(value: 'about', child: Text('About')),
+            PopupMenuItem(value: 'about-app', child: Text('About the App')),
+            PopupMenuItem(value: 'about-developer', child: Text('About the Developer')),
             PopupMenuItem(value: 'exit', child: Text('Exit')),
           ],
         ),

@@ -10,10 +10,11 @@ import 'package:pdf_reader/domain/usecases/share_pdf_file.dart';
 import 'package:pdf_reader/presentation/bloc/orientation_cubit.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import 'package:pdf_reader/presentation/bloc/wakelock_cubit.dart';
+import 'package:pdf_reader/presentation/screens/about_developer_screen.dart';
 import 'package:pdf_reader/presentation/screens/home_screen.dart';
 import 'package:pdf_reader/presentation/screens/settings_screen.dart';
 import 'package:pdf_reader/core/navigation/navigation_service.dart';
-import 'package:pdf_reader/presentation/screens/about_screen.dart';
+import 'package:pdf_reader/presentation/screens/about_app_screen.dart';
 import 'package:pdf_reader/presentation/bloc/theme_cubit.dart';
 
 final NavigationService navigationService = NavigationService();
@@ -72,7 +73,8 @@ class MyApp extends StatelessWidget {
           home: const HomeScreen(),
           routes: {
             '/settings': (_) => const SettingsScreen(),
-            '/about': (_) => const AboutScreen(),
+            '/about-app': (_) => const AboutAppScreen(),
+            '/about-developer': (_) => const AboutDeveloperScreen(),
           },
         );
       },
