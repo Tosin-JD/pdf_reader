@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import '../../domain/entities/bookmark.dart';
 
@@ -13,7 +15,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late PDFViewController _pdfViewController;
+  final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
+  final PdfViewerController _viewerController = PdfViewerController();
+
   int _currentPage = 0;
   bool _showAppBar = true;
   int _tapCount = 0;
@@ -56,7 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: Text("Page ${bookmarks[i].page + 1}"),
           onTap: () {
             Navigator.pop(context);
-            _pdfViewController.setPage(bookmarks[i].page);
+            _viewerController.jumpToPage(
+              bookmarks[i].page + 1,
+            ); // SfPdfViewer is 1-indexed
           },
         ),
       ),
@@ -73,6 +79,15 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text("PDF Reader"),
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    showSearch(
+                      context: context,
+                      delegate: PdfSearchDelegate(_viewerController),
+                    );
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.bookmark),
                   onPressed: () =>
                       _showAddBookmarkDialog(context, _currentPage),
@@ -84,54 +99,75 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.read<PdfCubit>().state.bookmarks,
                   ),
                 ),
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'settings':
+                        Navigator.pushNamed(context, '/settings');
+                        break;
+                      case 'about':
+                        showAboutDialog(
+                          context: context,
+                          applicationName: 'PDF Reader',
+                          applicationVersion: '1.0.0',
+                          applicationLegalese: '© Oluwatosin Durodola',
+                        );
+                        break;
+                      case 'exit':
+                        exit(0);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'settings',
+                      child: Text('Settings'),
+                    ),
+                    const PopupMenuItem(value: 'about', child: Text('About')),
+                    const PopupMenuItem(value: 'exit', child: Text('Exit')),
+                  ],
+                ),
               ],
             )
           : null,
-
       body: BlocBuilder<PdfCubit, PdfState>(
         builder: (context, state) {
-          if (state.pdf != null) {
+          if (state.pdf != null && File(state.pdf!.path).existsSync()) {
             return Stack(
               children: [
-                PDFView(
-                  filePath: state.pdf!.path,
-                  defaultPage: state.lastPage ?? 0,
-                  enableSwipe: true,
-                  swipeHorizontal: false,
-                  autoSpacing: true,
-                  pageFling: true,
-                  onPageChanged: (page, total) {
+                SfPdfViewer.file(
+                  File(state.pdf!.path),
+                  key: _pdfViewerKey,
+                  controller: _viewerController,
+                  initialScrollOffset: Offset.zero,
+                  initialZoomLevel: 1.0,
+                  canShowScrollStatus: false,
+                  onPageChanged: (details) {
                     setState(() {
-                      _currentPage = page!;
+                      _currentPage = details.newPageNumber - 1;
                     });
                     bloc.savePage(_currentPage);
                   },
-                  onViewCreated: (controller) {
-                    _pdfViewController = controller;
-                  },
+                  initialPageNumber:
+                      (state.lastPage ?? 0) + 1, // SfPdfViewer is 1-indexed
                 ),
-
-                // Transparent tap detector
+                // Tap overlay for toggling AppBar
                 Positioned.fill(
-  child: GestureDetector(
-    behavior: HitTestBehavior.translucent,
-    onTapDown: (_) {
-      _tapCount++;
-
-      _tapTimer?.cancel();
-      _tapTimer = Timer(const Duration(milliseconds: 250), () {
-        if (_tapCount == 1) {
-          setState(() {
-            _showAppBar = !_showAppBar;
-          });
-        }
-
-        _tapCount = 0;
-      });
-    },
-  ),
-),
-
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTapDown: (_) {
+                      _tapCount++;
+                      _tapTimer?.cancel();
+                      _tapTimer = Timer(const Duration(milliseconds: 250), () {
+                        if (_tapCount == 1) {
+                          setState(() {
+                            _showAppBar = !_showAppBar;
+                          });
+                        }
+                        _tapCount = 0;
+                      });
+                    },
+                  ),
+                ),
               ],
             );
           } else {
@@ -145,4 +181,40 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class PdfSearchDelegate extends SearchDelegate {
+  final PdfViewerController controller;
+
+  PdfSearchDelegate(this.controller);
+
+  @override
+  List<Widget>? buildActions(BuildContext context) => [
+    IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+  ];
+
+  @override
+  Widget? buildLeading(BuildContext context) => BackButton();
+
+  @override
+  Widget buildResults(BuildContext context) {
+    controller.clearSelection();
+
+    final searchResult = controller.searchText(query);
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (searchResult.hasResult) {
+        searchResult.nextInstance();
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("No results found")));
+      }
+    });
+
+    return const SizedBox();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) => const SizedBox();
 }

@@ -8,8 +8,7 @@ import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import 'package:pdf_reader/screens/home_screen.dart';
-
-
+import 'package:pdf_reader/screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +36,6 @@ void main() async {
   runApp(MyApp(pdfCubit: pdfCubit));
 }
 
-
 class MyApp extends StatelessWidget {
   final PdfCubit pdfCubit;
 
@@ -48,10 +46,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PDF Reader',
       theme: ThemeData.dark(),
-      home: BlocProvider(
-        create: (_) => pdfCubit,
-        child: HomeScreen(),
-      ),
+      home: BlocProvider(create: (_) => pdfCubit, child: HomeScreen()),
+      routes: {'/settings': (_) => const SettingsScreen()},
     );
   }
 }
