@@ -6,6 +6,7 @@ import 'package:pdf_reader/domain/repositories/save_last_page.dart';
 import 'package:pdf_reader/domain/usecases/add_bookmark.dart';
 import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
+import 'package:pdf_reader/domain/usecases/share_pdf_file.dart';
 import 'package:pdf_reader/presentation/bloc/orientation_cubit.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import 'package:pdf_reader/presentation/bloc/wakelock_cubit.dart';
@@ -27,6 +28,7 @@ void main() async {
   final getLastPage = GetLastPage(pdfRepo);
   final addBookmark = AddBookmark(pdfRepo);
   final getBookmarks = GetBookmarks(pdfRepo);
+  final sharePdf = SharePdfFile();
 
   final pdfCubit = PdfCubit(
     pdfRepo,
@@ -35,6 +37,7 @@ void main() async {
     getLastPage,
     addBookmark,
     getBookmarks,
+    sharePdf,
   );
 
   // Load last file

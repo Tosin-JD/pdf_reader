@@ -10,6 +10,7 @@ import 'package:pdf_reader/domain/repositories/save_last_page.dart';
 import 'package:pdf_reader/domain/usecases/add_bookmark.dart';
 import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
+import 'package:pdf_reader/domain/usecases/share_pdf_file.dart';
 
 class PdfState {
   final PdfFile? pdf;
@@ -34,6 +35,7 @@ class PdfCubit extends Cubit<PdfState> {
   final GetLastPage getLastPage;
   final AddBookmark addBookmark;
   final GetBookmarks getBookmarks;
+  final SharePdfFile sharePdfFile;
 
   PdfCubit(
     this.repository,
@@ -42,6 +44,7 @@ class PdfCubit extends Cubit<PdfState> {
     this.getLastPage,
     this.addBookmark,
     this.getBookmarks,
+    this.sharePdfFile,
   ) : super( PdfState());
 
   Future<void> loadPdf() async {
@@ -78,6 +81,13 @@ class PdfCubit extends Cubit<PdfState> {
       final bookmarks = await repository.getBookmarks(path);
 
       emit(PdfState(pdf: pdf, lastPage: lastPage, bookmarks: bookmarks));
+    }
+  }
+
+  Future<void> shareCurrentPdf() async {
+    final path = state.pdf?.path;
+    if (path != null) {
+      await sharePdfFile(path);
     }
   }
 }

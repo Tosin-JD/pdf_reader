@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/main.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
-import '../../../../domain/entities/bookmark.dart';
+import '../../../domain/entities/bookmark.dart';
 
 class AppBarMenu extends StatelessWidget {
   final int currentPage;
   final void Function(BuildContext, int) onAddBookmark;
   final void Function(BuildContext, List<Bookmark>) onShowBookmarks;
-  final void Function(String) onSearch;
+  final VoidCallback onSearch; // <- Changed here
 
   const AppBarMenu({
     super.key,
@@ -29,7 +29,7 @@ class AppBarMenu extends StatelessWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.search),
-          onPressed: () => onSearch(context as String),
+          onPressed: onSearch,
         ),
         IconButton(
           icon: const Icon(Icons.bookmark),
@@ -45,6 +45,9 @@ class AppBarMenu extends StatelessWidget {
               case 'settings':
                 navigationService.navigateTo('/settings');
                 break;
+              case 'share':
+                context.read<PdfCubit>().shareCurrentPdf();
+                break;
               case 'about':
                 navigationService.navigateTo('/about');
                 break;
@@ -53,18 +56,10 @@ class AppBarMenu extends StatelessWidget {
             }
           },
           itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'settings',
-              child: Text('Settings'),
-            ),
-            PopupMenuItem(
-              value: 'about',
-              child: Text('About'),
-            ),
-            PopupMenuItem(
-              value: 'exit',
-              child: Text('Exit'),
-            ),
+            PopupMenuItem(value: 'settings', child: Text('Settings')),
+            PopupMenuItem(value: 'share', child: Text('Share PDF')),
+            PopupMenuItem(value: 'about', child: Text('About')),
+            PopupMenuItem(value: 'exit', child: Text('Exit')),
           ],
         ),
       ],

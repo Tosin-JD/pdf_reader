@@ -21,8 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final PdfViewerController _viewerController = PdfViewerController();
 
   bool _showAppBar = true;
-  int _tapCount = 0;
-  Timer? _tapTimer;
   int _currentPage = 0;
 
   void toggleAppBar() {
@@ -83,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 currentPage: _currentPage,
                 onAddBookmark: _showAddBookmarkDialog,
                 onShowBookmarks: _showBookmarks,
-                onSearch: (_) {
+                onSearch: () {
                   showSearch(
                     context: context,
                     delegate: PdfSearchDelegate(_viewerController),
