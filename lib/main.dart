@@ -8,6 +8,7 @@ import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
 import 'package:pdf_reader/presentation/bloc/orientation_cubit.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
+import 'package:pdf_reader/presentation/bloc/wakelock_cubit.dart';
 import 'package:pdf_reader/presentation/screens/home_screen.dart';
 import 'package:pdf_reader/presentation/screens/settings_screen.dart';
 import 'package:pdf_reader/core/navigation/navigation_service.dart';
@@ -44,6 +45,7 @@ void main() async {
       providers: [
         BlocProvider(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => OrientationCubit()),
+        BlocProvider(create: (_) => WakelockCubit()),
         BlocProvider(create: (_) => pdfCubit),
       ],
       child: const MyApp(),

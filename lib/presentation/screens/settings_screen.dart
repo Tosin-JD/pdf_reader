@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/presentation/bloc/theme_cubit.dart';
+import 'package:pdf_reader/presentation/bloc/wakelock_cubit.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
       body: BlocBuilder<ThemeCubit, ThemeMode>(
@@ -43,6 +43,20 @@ class SettingsScreen extends StatelessWidget {
                 previewColor: Theme.of(context).colorScheme.surface,
                 value: ThemeMode.system,
                 groupValue: currentMode,
+              ),
+              BlocBuilder<WakelockCubit, bool>(
+                builder: (context, keepAwake) {
+                  return SwitchListTile(
+                    title: const Text("Keep Screen Awake"),
+                    subtitle: const Text(
+                      "Prevent screen from sleeping while reading",
+                    ),
+                    value: keepAwake,
+                    onChanged: (val) {
+                      context.read<WakelockCubit>().toggle();
+                    },
+                  );
+                },
               ),
             ],
           );
@@ -96,8 +110,7 @@ class SettingsScreen extends StatelessWidget {
             Radio<ThemeMode>(
               value: value,
               groupValue: groupValue,
-              onChanged: (_) =>
-                  context.read<ThemeCubit>().setTheme(value),
+              onChanged: (_) => context.read<ThemeCubit>().setTheme(value),
             ),
           ],
         ),
