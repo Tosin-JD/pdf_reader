@@ -11,6 +11,7 @@ import 'package:pdf_reader/domain/usecases/add_bookmark.dart';
 import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
 import 'package:pdf_reader/domain/usecases/share_pdf_file.dart';
+import 'package:printing/printing.dart';
 
 class PdfState {
   final PdfFile? pdf;
@@ -45,7 +46,7 @@ class PdfCubit extends Cubit<PdfState> {
     this.addBookmark,
     this.getBookmarks,
     this.sharePdfFile,
-  ) : super( PdfState());
+  ) : super(PdfState());
 
   Future<void> loadPdf() async {
     final pdf = await pickPdfFile();
@@ -89,5 +90,12 @@ class PdfCubit extends Cubit<PdfState> {
     if (path != null) {
       await sharePdfFile(path);
     }
+  }
+
+  Future<void> printCurrentPdf() async {
+    final file = state.pdf;
+    if (file == null) return;
+
+    await Printing.layoutPdf(onLayout: (_) => File(file.path).readAsBytes());
   }
 }

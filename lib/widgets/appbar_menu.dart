@@ -27,10 +27,7 @@ class AppBarMenu extends StatelessWidget {
     return AppBar(
       title: const Text("PDF Reader"),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: onSearch,
-        ),
+        IconButton(icon: const Icon(Icons.search), onPressed: onSearch),
         IconButton(
           icon: const Icon(Icons.bookmark),
           onPressed: () => onAddBookmark(context, currentPage),
@@ -48,6 +45,9 @@ class AppBarMenu extends StatelessWidget {
               case 'share':
                 context.read<PdfCubit>().shareCurrentPdf();
                 break;
+              case 'print':
+                context.read<PdfCubit>().printCurrentPdf();
+                break;
               case 'about':
                 navigationService.navigateTo('/about');
                 break;
@@ -58,6 +58,7 @@ class AppBarMenu extends StatelessWidget {
           itemBuilder: (context) => const [
             PopupMenuItem(value: 'settings', child: Text('Settings')),
             PopupMenuItem(value: 'share', child: Text('Share PDF')),
+            PopupMenuItem(value: 'print', child: Text('Print PDF')),
             PopupMenuItem(value: 'about', child: Text('About')),
             PopupMenuItem(value: 'exit', child: Text('Exit')),
           ],
