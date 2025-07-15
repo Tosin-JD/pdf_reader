@@ -7,8 +7,12 @@ import 'package:pdf_reader/domain/usecases/add_bookmark.dart';
 import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
-import 'package:pdf_reader/screens/home_screen.dart';
-import 'package:pdf_reader/screens/settings_screen.dart';
+import 'package:pdf_reader/presentation/screens/home_screen.dart';
+import 'package:pdf_reader/presentation/screens/settings_screen.dart';
+import 'package:pdf_reader/core/navigation/navigation_service.dart';
+import 'package:pdf_reader/presentation/screens/about_screen.dart';
+
+final NavigationService navigationService = NavigationService();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,8 +50,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PDF Reader',
       theme: ThemeData.dark(),
+      navigatorKey: navigationService.navigatorKey,
       home: BlocProvider(create: (_) => pdfCubit, child: HomeScreen()),
-      routes: {'/settings': (_) => const SettingsScreen()},
+      routes: {
+        '/settings': (_) => const SettingsScreen(),
+        '/about': (_) => const AboutScreen(),
+      },
     );
   }
 }

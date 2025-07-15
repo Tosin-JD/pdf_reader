@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
-import '../../domain/entities/bookmark.dart';
+import '../../../domain/entities/bookmark.dart';
+import 'package:pdf_reader/core/navigation/navigation_service.dart';
+import 'package:pdf_reader/main.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -103,15 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSelected: (value) {
                     switch (value) {
                       case 'settings':
-                        Navigator.pushNamed(context, '/settings');
+                        navigationService.navigateTo('/settings');
                         break;
                       case 'about':
-                        showAboutDialog(
-                          context: context,
-                          applicationName: 'PDF Reader',
-                          applicationVersion: '1.0.0',
-                          applicationLegalese: '© Oluwatosin Durodola',
-                        );
+                        navigationService.navigateTo('/about');
                         break;
                       case 'exit':
                         exit(0);
