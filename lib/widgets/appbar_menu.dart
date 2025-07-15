@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,53 @@ class AppBarMenu extends StatelessWidget {
     required this.onShowBookmarks,
     required this.onSearch,
   });
+
+  void _showPdfInfoDialog(BuildContext context) async {
+    final pdf = context.read<PdfCubit>().state.pdf;
+    if (pdf == null) return;
+
+    final file = File(pdf.path);
+    final fileStat = await file.stat();
+
+    final fileName = pdf.name;
+    final filePath = pdf.path;
+    final fileSize = _formatBytes(fileStat.size);
+    final lastModified = fileStat.modified;
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('PDF Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('📄 Name: $fileName'),
+            const SizedBox(height: 6),
+            Text('📁 Path: $filePath'),
+            const SizedBox(height: 6),
+            Text('📏 Size: $fileSize'),
+            const SizedBox(height: 6),
+            Text('🕒 Modified: $lastModified'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Close'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatBytes(int bytes, [int decimals = 2]) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB"];
+    final i = (log(bytes) / log(1024)).floor();
+    final size = (bytes / pow(1024, i)).toStringAsFixed(decimals);
+    return "$size ${suffixes[i]}";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +96,9 @@ class AppBarMenu extends StatelessWidget {
               case 'print':
                 context.read<PdfCubit>().printCurrentPdf();
                 break;
+              case 'info':
+                _showPdfInfoDialog(context);
+                break;
               case 'about':
                 navigationService.navigateTo('/about');
                 break;
@@ -59,6 +110,7 @@ class AppBarMenu extends StatelessWidget {
             PopupMenuItem(value: 'settings', child: Text('Settings')),
             PopupMenuItem(value: 'share', child: Text('Share PDF')),
             PopupMenuItem(value: 'print', child: Text('Print PDF')),
+            PopupMenuItem(value: 'info', child: Text('File Info')),
             PopupMenuItem(value: 'about', child: Text('About')),
             PopupMenuItem(value: 'exit', child: Text('Exit')),
           ],
