@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf_reader/presentation/bloc/orientation_cubit.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import '../../../domain/entities/bookmark.dart';
-import 'package:pdf_reader/core/navigation/navigation_service.dart';
 import 'package:pdf_reader/main.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -172,10 +172,58 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => bloc.loadPdf(),
-        child: const Icon(Icons.file_open),
-      ),
+      floatingActionButton: _showAppBar
+    ? BlocBuilder<OrientationCubit, OrientationState>(
+        builder: (context, state) {
+          final orientationCubit = context.read<OrientationCubit>();
+          final isPortrait =
+              state.orientation == ScreenOrientation.portrait;
+
+          final rotateIcon = isPortrait
+              ? Icons.screen_lock_landscape
+              : Icons.screen_lock_portrait;
+
+          final rotateTooltip = isPortrait
+              ? 'Rotate to Landscape'
+              : 'Rotate to Portrait';
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!state.isLocked) ...[
+                // 🔄 Show rotate only when unlocked
+                FloatingActionButton(
+                  heroTag: 'rotate',
+                  onPressed: () => orientationCubit.rotate(),
+                  tooltip: rotateTooltip,
+                  child: Icon(rotateIcon),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // 🔒 Lock/Unlock button
+              FloatingActionButton(
+                heroTag: 'lock',
+                onPressed: () => orientationCubit.toggleLock(),
+                tooltip: state.isLocked ? 'Unlock Rotation' : 'Lock Rotation',
+                child: Icon(state.isLocked ? Icons.lock : Icons.lock_open),
+              ),
+              const SizedBox(height: 12),
+
+              // 📄 Pick PDF
+              FloatingActionButton(
+                heroTag: 'pick',
+                onPressed: () => context.read<PdfCubit>().loadPdf(),
+                tooltip: 'Pick PDF',
+                child: const Icon(Icons.file_open),
+              ),
+            ],
+          );
+        },
+      )
+    : null,
+
     );
   }
 }
