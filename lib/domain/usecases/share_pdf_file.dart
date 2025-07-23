@@ -4,8 +4,12 @@ import 'package:share_plus/share_plus.dart';
 class SharePdfFile {
   Future<void> call(String path) async {
     final file = File(path);
+    final params = ShareParams(
+      text: 'Check this PDF File',
+      files: [XFile(path)], 
+    );
     if (file.existsSync()) {
-      await Share.shareXFiles([XFile(path)], text: 'Check out this PDF');
+      await SharePlus.instance.share(params);
     }
   }
 }
