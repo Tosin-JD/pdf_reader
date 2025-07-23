@@ -24,6 +24,7 @@ class PdfSearchDelegate extends SearchDelegate {
       return const Center(child: Text("Enter search term"));
     }
 
+    // pdfrx doesn't have built-in search functionality like Syncfusion
     // This is a placeholder implementation
     return Center(
       child: Column(
