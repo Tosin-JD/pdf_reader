@@ -1,8 +1,9 @@
+// lib/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/widgets/appbar_menu.dart';
 import 'package:pdf_reader/widgets/pdf_search_delegate.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import '../../domain/entities/bookmark.dart';
 import 'package:pdf_reader/widgets/pdf_view_widget.dart';
@@ -15,7 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
   final PdfViewerController _viewerController = PdfViewerController();
 
   bool _showAppBar = true;
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: Text("Page ${bookmarks[i].page + 1}"),
           onTap: () {
             Navigator.pop(context);
-            _viewerController.jumpToPage(bookmarks[i].page + 1);
+            _viewerController.goToPage(pageNumber: bookmarks[i].page + 1);
           },
         ),
       ),
@@ -92,7 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
         showAppBar: _showAppBar,
         toggleAppBar: toggleAppBar,
         viewerController: _viewerController,
-        pdfViewerKey: _pdfViewerKey,
         onPageChanged: (newPage) {
           setState(() => _currentPage = newPage);
         },
