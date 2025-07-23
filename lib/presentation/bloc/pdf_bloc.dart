@@ -98,4 +98,20 @@ class PdfCubit extends Cubit<PdfState> {
 
     await Printing.layoutPdf(onLayout: (_) => File(file.path).readAsBytes());
   }
+
+  Future<void> loadPdfFromPath(String path) async {
+    final file = File(path);
+    if (!file.existsSync()) {
+      // print("Shared file does not exist: $path");
+      return;
+    }
+
+    final pdf = PdfFile(name: file.uri.pathSegments.last, path: path);
+    await repository.saveLastOpenedFile(path);
+
+    final lastPage = await getLastPage(path);
+    final bookmarks = await getBookmarks(path);
+
+    emit(PdfState(pdf: pdf, lastPage: lastPage, bookmarks: bookmarks));
+  }
 }

@@ -44,6 +44,10 @@ dependencies:
   share_plus: ^11.0.0
   printing: ^5.14.2
   url_launcher: ^6.3.2
+  receive_sharing_intent:
+    git:
+      url: https://github.com/KasemJaffer/receive_sharing_intent
+      ref: 2cea396843cd3ab1b5ec4334be4233864637874e
 
 
 dev_dependencies:
@@ -105,3 +109,4 @@ flutter_icons:
   ios: true
   image_path: "assets/icons/pdf_reader.png"
   remove_alpha_ios: true
+

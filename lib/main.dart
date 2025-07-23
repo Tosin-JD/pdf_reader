@@ -16,6 +16,7 @@ import 'package:pdf_reader/presentation/screens/settings_screen.dart';
 import 'package:pdf_reader/core/navigation/navigation_service.dart';
 import 'package:pdf_reader/presentation/screens/about_app_screen.dart';
 import 'package:pdf_reader/presentation/bloc/theme_cubit.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 final NavigationService navigationService = NavigationService();
 
@@ -41,8 +42,14 @@ void main() async {
     sharePdf,
   );
 
-  // Load last file
-  await pdfCubit.loadLastOpenedFile();
+  // Listen to share intent
+  ReceiveSharingIntent.instance.getInitialMedia().then((List<SharedMediaFile> value) async {
+    if (value.isNotEmpty && value.first.path.toLowerCase().endsWith(".pdf")) {
+      await pdfCubit.loadPdfFromPath(value.first.path);  // <- make sure this method exists
+    } else {
+      await pdfCubit.loadLastOpenedFile();
+    }
+  });
 
   runApp(
     MultiBlocProvider(
