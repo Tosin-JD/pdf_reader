@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/main.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
+import 'package:pdf_reader/widgets/pdf_search_field.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../../domain/entities/bookmark.dart';
 
@@ -28,34 +29,12 @@ class AppBarMenu extends StatefulWidget {
 
 class _AppBarMenuState extends State<AppBarMenu> {
   bool _showSearchField = false;
-  final TextEditingController _searchController = TextEditingController();
   late PdfViewerController _pdfViewerController;
 
   @override
   void initState() {
     super.initState();
     _pdfViewerController = widget.viewerController;
-  }
-
-  void _performSearch(String query) async {
-    _pdfViewerController.clearSelection();
-
-    final searchResult = _pdfViewerController.searchText(query);
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    if (!mounted) return;
-
-    searchResult.addListener(() {
-      if (searchResult.hasResult) {
-      // result.nextInstance();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Search results found.")));
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("No results were found.")));
-    }});
   }
 
   void _showPdfInfoDialog(BuildContext context) async {
@@ -111,25 +90,23 @@ class _AppBarMenuState extends State<AppBarMenu> {
 
     return AppBar(
       title: _showSearchField
-          ? TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: "Search PDF...",
-                border: InputBorder.none,
-              ),
-              textInputAction: TextInputAction.search,
-              onSubmitted: _performSearch,
-            )
-          : const Text("PDF Reader"),
+    ? PdfSearchField(
+        viewerController: _pdfViewerController,
+        onClose: () {
+          setState(() {
+            _showSearchField = false;
+          });
+        },
+      )
+    : const Text("PDF Reader"),
       actions: [
         IconButton(
           icon: Icon(_showSearchField ? Icons.close : Icons.search),
           onPressed: () {
             setState(() {
-              if (_showSearchField) {
-                _searchController.clear();
-              }
+              // if (_showSearchField) {
+              //   _searchController.clear();
+              // }
               _showSearchField = !_showSearchField;
             });
           },
