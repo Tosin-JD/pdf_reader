@@ -42,7 +42,7 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
                 key: widget.pdfViewerKey,
                 controller: widget.viewerController,
                 initialScrollOffset: Offset.zero,
-                initialZoomLevel: 1.0,
+                initialZoomLevel: 1.0001,
                 canShowScrollStatus: false,
                 enableDoubleTapZooming: true,
                 enableTextSelection: true,
