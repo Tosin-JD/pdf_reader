@@ -8,15 +8,18 @@ import '../../domain/entities/bookmark.dart';
 import 'package:pdf_reader/widgets/pdf_view_widget.dart';
 import 'package:pdf_reader/widgets/fab_buttons.dart';
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
   final PdfViewerController _viewerController = PdfViewerController();
+  late PdfTextSearchResult _searchResult;
 
   bool _showAppBar = true;
   int _currentPage = 0;
@@ -82,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onSearch: () {
                   showSearch(
                     context: context,
-                    delegate: PdfSearchDelegate(_viewerController),
+                    delegate: PdfSearchDelegate(_viewerController, _searchResult),
                   );
                 },
               ),
@@ -96,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPageChanged: (newPage) {
           setState(() => _currentPage = newPage);
         },
+        
       ),
       floatingActionButton: _showAppBar ? const FabButtons() : null,
     );

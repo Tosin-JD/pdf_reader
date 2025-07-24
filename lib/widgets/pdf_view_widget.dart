@@ -44,6 +44,9 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
                 initialScrollOffset: Offset.zero,
                 initialZoomLevel: 1.0,
                 canShowScrollStatus: false,
+                enableDoubleTapZooming: true,
+                enableTextSelection: true,
+                interactionMode: PdfInteractionMode.selection,
                 onPageChanged: (details) {
                   final page = details.newPageNumber - 1;
                   context.read<PdfCubit>().savePage(page);

@@ -1,103 +1,60 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class PdfSearchDelegate extends SearchDelegate {
   final PdfViewerController controller;
-  late PdfTextSearchResult _searchResult;
+  final PdfTextSearchResult searchResult;
 
-  PdfSearchDelegate(this.controller) {
-    _searchResult = PdfTextSearchResult();
-  }
+  PdfSearchDelegate(this.controller, this.searchResult);
 
   @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      if (_searchResult.hasResult)
+  List<Widget>? buildActions(BuildContext context) => [
         IconButton(
-          icon: const Icon(Icons.keyboard_arrow_up),
+          icon: const Icon(Icons.clear),
           onPressed: () {
-            _searchResult.previousInstance();
+            query = '';
+            showSuggestions(context);
           },
         ),
-      if (_searchResult.hasResult)
-        IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down),
-          onPressed: () {
-            _searchResult.nextInstance();
-          },
-        ),
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-          controller.clearSelection();
-          _searchResult.clear();
-          showSuggestions(context);
-        },
-      ),
-    ];
-  }
+      ];
 
   @override
-  Widget? buildLeading(BuildContext context) => IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () {
-          controller.clearSelection();
-          _searchResult.clear();
-          close(context, null);
-        },
-      );
+  Widget? buildLeading(BuildContext context) => const BackButton();
 
   @override
   Widget buildResults(BuildContext context) {
     controller.clearSelection();
+    searchResult.removeListener(() => _onSearchComplete(context));
 
-    // Perform the search and listen for changes
-    _searchResult = controller.searchText(
+    // Start the search
+    final result = controller.searchText(
       query,
-      searchOption: PdfTextSearchOption.caseSensitive,
+      searchOption: TextSearchOption.caseSensitive,
     );
 
-    // Handle result feedback
-    if (!kIsWeb) {
-      _searchResult.addListener(() {
-        if (_searchResult.hasResult) {
-          _searchResult.nextInstance();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("No results found")),
-          );
-        }
-      });
-    } else {
-      // Web platform workaround
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (_searchResult.hasResult) {
-          _searchResult.nextInstance();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("No results found")),
-          );
-        }
-      });
+    // Attach listener
+    result.addListener(() => _onSearchComplete(context));
+
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  void _onSearchComplete(BuildContext context) {
+    if (!context.mounted) return;
+
+    if (searchResult.isSearchCompleted) {
+      if (searchResult.hasResult) {
+        searchResult.nextInstance();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No results found")),
+        );
+      }
+
+      searchResult.removeListener(() => _onSearchComplete(context));
     }
-
-    return Center(
-      child: Text(
-        'Searching for "$query"...',
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-    );
   }
 
   @override
-  Widget buildSuggestions(BuildContext context) {
-    return Center(
-      child: Text(
-        query.isEmpty ? 'Enter text to search' : 'Tap search to find "$query"',
-        style: const TextStyle(color: Colors.grey),
-      ),
-    );
-  }
+  Widget buildSuggestions(BuildContext context) => const SizedBox();
 }

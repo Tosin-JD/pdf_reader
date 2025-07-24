@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/main.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../../domain/entities/bookmark.dart';
 
-class AppBarMenu extends StatelessWidget {
+class AppBarMenu extends StatefulWidget {
   final int currentPage;
   final void Function(BuildContext, int) onAddBookmark;
   final void Function(BuildContext, List<Bookmark>) onShowBookmarks;
-  final VoidCallback onSearch; // <- Changed here
+  final VoidCallback onSearch;
 
   const AppBarMenu({
     super.key,
@@ -20,6 +21,37 @@ class AppBarMenu extends StatelessWidget {
     required this.onShowBookmarks,
     required this.onSearch,
   });
+
+  @override
+  State<AppBarMenu> createState() => _AppBarMenuState();
+}
+
+
+class _AppBarMenuState extends State<AppBarMenu> {
+  bool _showSearchField = false;
+  final TextEditingController _searchController = TextEditingController();
+  late PdfViewerController _pdfViewerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pdfViewerController = context.read<PdfCubit>().state.controller!;
+  }
+
+  void _performSearch(String query) {
+    _pdfViewerController.clearSelection();
+
+    final result = _pdfViewerController.searchText(query);
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (result.hasResult) {
+        result.nextInstance();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No results found")),
+        );
+      }
+    });
+  }
 
   void _showPdfInfoDialog(BuildContext context) async {
     final pdf = context.read<PdfCubit>().state.pdf;
@@ -73,53 +105,79 @@ class AppBarMenu extends StatelessWidget {
     final bookmarks = context.read<PdfCubit>().state.bookmarks;
 
     return AppBar(
-      title: const Text("PDF Reader"),
+      title: _showSearchField
+          ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: "Search PDF...",
+                border: InputBorder.none,
+              ),
+              textInputAction: TextInputAction.search,
+              onSubmitted: _performSearch,
+            )
+          : const Text("PDF Reader"),
       actions: [
-        IconButton(icon: const Icon(Icons.search), onPressed: onSearch),
         IconButton(
-          icon: const Icon(Icons.bookmark),
-          onPressed: () => onAddBookmark(context, currentPage),
-        ),
-        IconButton(
-          icon: const Icon(Icons.list),
-          onPressed: () => onShowBookmarks(context, bookmarks),
-        ),
-        PopupMenuButton<String>(
-          onSelected: (value) {
-            switch (value) {
-              case 'settings':
-                navigationService.navigateTo('/settings');
-                break;
-              case 'share':
-                context.read<PdfCubit>().shareCurrentPdf();
-                break;
-              case 'print':
-                context.read<PdfCubit>().printCurrentPdf();
-                break;
-              case 'info':
-                _showPdfInfoDialog(context);
-                break;
-              case 'about-app':
-                navigationService.navigateTo('/about');
-                break;
-              case 'about-developer':
-                navigationService.navigateTo('/about-developer');
-                break;
-              case 'exit':
-                exit(0);
-            }
+          icon: Icon(_showSearchField ? Icons.close : Icons.search),
+          onPressed: () {
+            setState(() {
+              if (_showSearchField) {
+                _searchController.clear();
+              }
+              _showSearchField = !_showSearchField;
+            });
           },
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: 'settings', child: Text('Settings')),
-            PopupMenuItem(value: 'share', child: Text('Share PDF')),
-            PopupMenuItem(value: 'print', child: Text('Print PDF')),
-            PopupMenuItem(value: 'info', child: Text('File Info')),
-            PopupMenuItem(value: 'about-app', child: Text('About the App')),
-            PopupMenuItem(value: 'about-developer', child: Text('About the Developer')),
-            PopupMenuItem(value: 'exit', child: Text('Exit')),
-          ],
         ),
+        if (!_showSearchField)
+          IconButton(
+            icon: const Icon(Icons.bookmark),
+            onPressed: () => widget.onAddBookmark(context, widget.currentPage),
+          ),
+        if (!_showSearchField)
+          IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () => widget.onShowBookmarks(context, bookmarks),
+          ),
+        if (!_showSearchField)
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'settings':
+                  navigationService.navigateTo('/settings');
+                  break;
+                case 'share':
+                  context.read<PdfCubit>().shareCurrentPdf();
+                  break;
+                case 'print':
+                  context.read<PdfCubit>().printCurrentPdf();
+                  break;
+                case 'info':
+                  _showPdfInfoDialog(context);
+                  break;
+                case 'about-app':
+                  navigationService.navigateTo('/about');
+                  break;
+                case 'about-developer':
+                  navigationService.navigateTo('/about-developer');
+                  break;
+                case 'exit':
+                  exit(0);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'settings', child: Text('Settings')),
+              PopupMenuItem(value: 'share', child: Text('Share PDF')),
+              PopupMenuItem(value: 'print', child: Text('Print PDF')),
+              PopupMenuItem(value: 'info', child: Text('File Info')),
+              PopupMenuItem(value: 'about-app', child: Text('About the App')),
+              PopupMenuItem(value: 'about-developer', child: Text('About the Developer')),
+              PopupMenuItem(value: 'exit', child: Text('Exit')),
+            ],
+          ),
       ],
     );
   }
 }
+
+
