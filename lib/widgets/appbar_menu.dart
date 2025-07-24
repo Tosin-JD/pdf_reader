@@ -53,24 +53,41 @@ class _AppBarMenuState extends State<AppBarMenu> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('PDF Info'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('📄 Name: $fileName'),
-            const SizedBox(height: 6),
-            Text('📁 Path: $filePath'),
-            const SizedBox(height: 6),
-            Text('📏 Size: $fileSize'),
-            const SizedBox(height: 6),
-            Text('🕒 Modified: $lastModified'),
-          ],
+        title: const Text('File Information'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.description_outlined,
+                    color: Theme.of(context).colorScheme.primary),
+                title: const Text('Name'),
+                subtitle: Text(fileName),
+              ),
+              ListTile(
+                leading: Icon(Icons.folder_open_outlined,
+                    color: Theme.of(context).colorScheme.primary),
+                title: const Text('Path'),
+                subtitle: Text(filePath),
+              ),
+              ListTile(
+                leading: Icon(Icons.straighten_outlined,
+                    color: Theme.of(context).colorScheme.primary),
+                title: const Text('Size'),
+                subtitle: Text(fileSize),
+              ),
+              ListTile(
+                leading: Icon(Icons.history_toggle_off_outlined,
+                    color: Theme.of(context).colorScheme.primary),
+                title: const Text('Last Modified'),
+                subtitle: Text(lastModified.toString()),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            child: const Text('Close'),
-            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ],
       ),
@@ -179,7 +196,15 @@ class _AppBarMenuState extends State<AppBarMenu> {
               PopupMenuItem(value: 'info', child: Text('File Info')),
               PopupMenuDivider(),
               PopupMenuItem(value: 'settings', child: Text('Settings')),
-              PopupMenuItem(value: 'donate', child: Text('❤️ Donate')),
+              PopupMenuItem(
+                  value: 'donate',
+                  child: const Row(
+                    children: [
+                      Icon(Icons.favorite),
+                      SizedBox(width: 16),
+                      Text('Donate'),
+                    ],
+                  )),
               PopupMenuItem(value: 'about-app', child: Text('About the App')),
               PopupMenuItem(
                 value: 'about-developer',
