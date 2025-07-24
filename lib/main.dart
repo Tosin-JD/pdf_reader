@@ -74,8 +74,19 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'PDF Reader',
           navigatorKey: navigationService.navigatorKey,
-          theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color.fromRGBO(0, 128, 128, 1),
+            ),
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color.fromRGBO(0, 128, 128, 1),
+                brightness: Brightness.dark),
+          ),
           themeMode: themeMode,
           home: const HomeScreen(),
           routes: {
