@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdf_reader/widgets/appbar_menu.dart';
-import 'package:pdf_reader/widgets/pdf_search_delegate.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import '../../domain/entities/bookmark.dart';
@@ -19,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
   final PdfViewerController _viewerController = PdfViewerController();
-  late PdfTextSearchResult _searchResult;
 
   bool _showAppBar = true;
   int _currentPage = 0;
@@ -82,12 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 currentPage: _currentPage,
                 onAddBookmark: _showAddBookmarkDialog,
                 onShowBookmarks: _showBookmarks,
-                onSearch: () {
-                  showSearch(
-                    context: context,
-                    delegate: PdfSearchDelegate(_viewerController, _searchResult),
-                  );
-                },
+                viewerController: _viewerController,
               ),
             )
           : null,

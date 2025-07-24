@@ -12,20 +12,19 @@ class AppBarMenu extends StatefulWidget {
   final int currentPage;
   final void Function(BuildContext, int) onAddBookmark;
   final void Function(BuildContext, List<Bookmark>) onShowBookmarks;
-  final VoidCallback onSearch;
+  final PdfViewerController viewerController;
 
   const AppBarMenu({
     super.key,
     required this.currentPage,
     required this.onAddBookmark,
     required this.onShowBookmarks,
-    required this.onSearch,
+    required this.viewerController,
   });
 
   @override
   State<AppBarMenu> createState() => _AppBarMenuState();
 }
-
 
 class _AppBarMenuState extends State<AppBarMenu> {
   bool _showSearchField = false;
@@ -35,22 +34,28 @@ class _AppBarMenuState extends State<AppBarMenu> {
   @override
   void initState() {
     super.initState();
-    _pdfViewerController = context.read<PdfCubit>().state.controller!;
+    _pdfViewerController = widget.viewerController;
   }
 
-  void _performSearch(String query) {
+  void _performSearch(String query) async {
     _pdfViewerController.clearSelection();
 
-    final result = _pdfViewerController.searchText(query);
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (result.hasResult) {
-        result.nextInstance();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No results found")),
-        );
-      }
-    });
+    final searchResult = _pdfViewerController.searchText(query);
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (!mounted) return;
+
+    searchResult.addListener(() {
+      if (searchResult.hasResult) {
+      // result.nextInstance();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Search results found.")));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No results were found.")));
+    }});
   }
 
   void _showPdfInfoDialog(BuildContext context) async {
@@ -171,7 +176,10 @@ class _AppBarMenuState extends State<AppBarMenu> {
               PopupMenuItem(value: 'print', child: Text('Print PDF')),
               PopupMenuItem(value: 'info', child: Text('File Info')),
               PopupMenuItem(value: 'about-app', child: Text('About the App')),
-              PopupMenuItem(value: 'about-developer', child: Text('About the Developer')),
+              PopupMenuItem(
+                value: 'about-developer',
+                child: Text('About the Developer'),
+              ),
               PopupMenuItem(value: 'exit', child: Text('Exit')),
             ],
           ),
@@ -179,5 +187,3 @@ class _AppBarMenuState extends State<AppBarMenu> {
     );
   }
 }
-
-
