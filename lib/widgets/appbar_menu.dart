@@ -91,13 +91,14 @@ class _AppBarMenuState extends State<AppBarMenu> {
     return AppBar(
       title: _showSearchField
     ? PdfSearchField(
-        viewerController: _pdfViewerController,
-        onClose: () {
-          setState(() {
-            _showSearchField = false;
-          });
-        },
-      )
+          controller: _pdfViewerController,
+          onAction: (action) {
+            if (action == 'cancelSearch') {
+              setState(() => _showSearchField = false);
+              Navigator.maybePop(context);
+            }
+          },
+        )
     : const Text("PDF Reader"),
       actions: [
         IconButton(
