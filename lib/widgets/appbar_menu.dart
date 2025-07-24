@@ -7,6 +7,7 @@ import 'package:pdf_reader/main.dart';
 import 'package:pdf_reader/presentation/bloc/pdf_bloc.dart';
 import 'package:pdf_reader/widgets/pdf_search_field.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../domain/entities/bookmark.dart';
 
 class AppBarMenu extends StatefulWidget {
@@ -84,22 +85,38 @@ class _AppBarMenuState extends State<AppBarMenu> {
     return "$size ${suffixes[i]}";
   }
 
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open link: $url')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bookmarks = context.read<PdfCubit>().state.bookmarks;
+    // Watch the PdfCubit's state. This will cause the widget to rebuild
+    // whenever the state changes (e.g., a new PDF is loaded).
+    final pdfState = context.watch<PdfCubit>().state;
+    final bookmarks = pdfState.bookmarks;
+    final pdf = pdfState.pdf;
+
+    final titleWidget = _showSearchField
+        ? PdfSearchField(
+            controller: _pdfViewerController,
+            onAction: (action) {
+              if (action == 'cancelSearch') {
+                setState(() => _showSearchField = false);
+              }
+            },
+          )
+        : Text(pdf?.name ?? 'PDF Reader', overflow: TextOverflow.ellipsis);
 
     return AppBar(
-      title: _showSearchField
-    ? PdfSearchField(
-          controller: _pdfViewerController,
-          onAction: (action) {
-            if (action == 'cancelSearch') {
-              setState(() => _showSearchField = false);
-              Navigator.maybePop(context);
-            }
-          },
-        )
-    : const Text("PDF Reader"),
+      title: titleWidget,
       actions: [
         IconButton(
           icon: Icon(_showSearchField ? Icons.close : Icons.search),
@@ -114,20 +131,19 @@ class _AppBarMenuState extends State<AppBarMenu> {
         ),
         if (!_showSearchField)
           IconButton(
-            icon: const Icon(Icons.bookmark),
-            onPressed: () => widget.onAddBookmark(context, widget.currentPage),
-          ),
-        if (!_showSearchField)
-          IconButton(
-            icon: const Icon(Icons.list),
-            onPressed: () => widget.onShowBookmarks(context, bookmarks),
+            icon: const Icon(Icons.bookmark_add_outlined),
+            tooltip: 'Add Bookmark',
+            // Disable the button if no PDF is loaded
+            onPressed: pdf == null
+                ? null
+                : () => widget.onAddBookmark(context, widget.currentPage),
           ),
         if (!_showSearchField)
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
-                case 'settings':
-                  navigationService.navigateTo('/settings');
+                case 'show-bookmarks':
+                  widget.onShowBookmarks(context, bookmarks);
                   break;
                 case 'share':
                   context.read<PdfCubit>().shareCurrentPdf();
@@ -137,6 +153,12 @@ class _AppBarMenuState extends State<AppBarMenu> {
                   break;
                 case 'info':
                   _showPdfInfoDialog(context);
+                  break;
+                case 'donate':
+                  _launchUrl('https://buymeacoffee.com/tosin789');
+                  break;
+                case 'settings':
+                  navigationService.navigateTo('/settings');
                   break;
                 case 'about-app':
                   navigationService.navigateTo('/about');
@@ -149,15 +171,21 @@ class _AppBarMenuState extends State<AppBarMenu> {
               }
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(value: 'settings', child: Text('Settings')),
+              PopupMenuItem(
+                  value: 'show-bookmarks', child: Text('Show Bookmarks')),
+              PopupMenuDivider(),
               PopupMenuItem(value: 'share', child: Text('Share PDF')),
               PopupMenuItem(value: 'print', child: Text('Print PDF')),
               PopupMenuItem(value: 'info', child: Text('File Info')),
+              PopupMenuDivider(),
+              PopupMenuItem(value: 'settings', child: Text('Settings')),
+              PopupMenuItem(value: 'donate', child: Text('❤️ Donate')),
               PopupMenuItem(value: 'about-app', child: Text('About the App')),
               PopupMenuItem(
                 value: 'about-developer',
                 child: Text('About the Developer'),
               ),
+              PopupMenuDivider(),
               PopupMenuItem(value: 'exit', child: Text('Exit')),
             ],
           ),
