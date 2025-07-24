@@ -12,22 +12,36 @@ import 'package:pdf_reader/domain/usecases/get_bookmarks.dart';
 import 'package:pdf_reader/domain/usecases/pick_pdf_file.dart';
 import 'package:pdf_reader/domain/usecases/share_pdf_file.dart';
 import 'package:printing/printing.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PdfState {
   final PdfFile? pdf;
   final int? lastPage;
   final List<Bookmark> bookmarks;
+  final PdfViewerController controller;
 
-  PdfState({this.pdf, this.lastPage, this.bookmarks = const []});
+  PdfState({
+    this.pdf,
+    this.lastPage,
+    this.bookmarks = const [],
+    PdfViewerController? controller,
+  }) : controller = controller ?? PdfViewerController();
 
-  PdfState copyWith({PdfFile? pdf, int? lastPage, List<Bookmark>? bookmarks}) {
+  PdfState copyWith({
+    PdfFile? pdf,
+    int? lastPage,
+    List<Bookmark>? bookmarks,
+    PdfViewerController? controller,
+  }) {
     return PdfState(
       pdf: pdf ?? this.pdf,
       lastPage: lastPage ?? this.lastPage,
       bookmarks: bookmarks ?? this.bookmarks,
+      controller: controller ?? this.controller,
     );
   }
 }
+
 
 class PdfCubit extends Cubit<PdfState> {
   final PdfRepository repository;
